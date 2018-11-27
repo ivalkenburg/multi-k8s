@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgsql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: pgsql
+  template:
+    metadata:
+      labels:
+        component: pgsql
+    spec:
+      volumes:
+        - name: pgsql-storage
+          persistentVolumeClaim:
+            claimName: pgsql-persistent-volume-claim
+      containers:
+        - name: pgsql
+          image: postgres:alpine
+          volumeMounts:
+            - name: pgsql-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
